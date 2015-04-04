@@ -51,10 +51,10 @@ module.exports = function (browserify, opts) {
             "no header comment found in file \"" + filename + "\"");
     var header = m[1].replace(/\r?\n/g, "\n") + "\n";
 
-    /*  hook into the bundle generation pipeline of Browserify  */
-    browserify.on("bundle", function (pipeline) {
+    /*  create a transform stream  */
+    var createStream = function () {
         var firstChunk = true;
-        pipeline.get("wrap").push(through.obj(function (buf, enc, next) {
+        var stream = through.obj(function (buf, enc, next) {
             if (firstChunk) {
                 /*  insert the header comment as the first chunk  */
                 this.push(new Buffer(header));
@@ -62,7 +62,15 @@ module.exports = function (browserify, opts) {
             }
             this.push(buf);
             next();
-        }));
+        });
+        stream.label = "header";
+        return stream;
+    };
+
+    /*  hook into the bundle generation pipeline of Browserify  */
+    browserify.pipeline.get("wrap").push(createStream());
+    browserify.on("reset", function () {
+        browserify.pipeline.get("wrap").push(createStream());
     });
 };
 
