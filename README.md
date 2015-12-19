@@ -26,7 +26,11 @@ This Browserify plugin [browserify-header](https://www.npmjs.com/package/browser
 adds the first `/*!...*/` comment (or alternatively just the first `/*...*/` comment at all)
 back to the top of the output bundle. By default the header is extracted
 from the first entry file to Browserify, but a separate file can be
-specified with the plugin option `--file`.
+specified with the plugin option `--file`. With a separate file, it is also
+possible to specify the `--raw` option which will include the entire contents of
+the file, not just the first comment. This is useful for instance, if you are
+prepending a metadata block for a [Greasemonkey](http://www.greasespot.net/) or
+[Tampermonkey](https://tampermonkey.net/) script.
 
 Installation
 ------------
@@ -47,6 +51,8 @@ $ browserify -p [ minifyify --output sample.browser.map ] \
              -o sample.browser.js sample.js
 $ browserify -p [ minifyify --output sample.browser.map ] \
              -p [ browserify-header --file header.js ] \
+             -o sample.browser.js sample.js
+$ browserify -p [ browserify-header --file header.txt --raw ] \
              -o sample.browser.js sample.js
 ```
 
