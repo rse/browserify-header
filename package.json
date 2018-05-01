@@ -1,6 +1,6 @@
 {
     "name":        "browserify-header",
-    "version":     "0.9.3",
+    "version":     "0.9.4",
     "description": "Browserify Plugin for Adding Header Comment",
     "keywords":    [ "browserify-plugin", "browserify", "plugin", "header", "comment" ],
     "main":        "index.js",
