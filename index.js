@@ -29,8 +29,12 @@ var through = require("through2");
 module.exports = function (browserify, opts) {
     /*  determine filename of header file  */
     var filename;
-    if (typeof opts.file === "string")
+		/*  determine whether to prepend raw file contents or only first comment */
+		var raw = false;
+    if (typeof opts.file === "string") {
         filename = opts.file;
+        raw = ('raw' in opts);
+    }
     else
         filename = browserify._options.entries[0];
 
@@ -43,13 +47,21 @@ module.exports = function (browserify, opts) {
         throw new Error("browserify-header: " +
             "failed to read file \"" + filename + "\": " + e.message);
     }
-    var m = source.match(/^(?:.|\r?\n)*?(\/\*!\r?\n(?:.|\r?\n)*?\*\/\r?\n).*/);
-    if (m === null)
-        m = source.match(/^(?:.|\r?\n)*?(\/\*\r?\n(?:.|\r?\n)*?\*\/\r?\n).*/);
-    if (m === null)
-        throw new Error("browserify-header: " +
-            "no header comment found in file \"" + filename + "\"");
-    var header = m[1].replace(/\r?\n/g, "\n") + "\n";
+
+    var header ;
+
+    /*   if --raw then include entire file contents */
+    if (raw)
+      header = source ;
+    else {
+      var m = source.match(/^(?:.|\r?\n)*?(\/\*!\r?\n(?:.|\r?\n)*?\*\/\r?\n).*/);
+      if (m === null)
+          m = source.match(/^(?:.|\r?\n)*?(\/\*\r?\n(?:.|\r?\n)*?\*\/\r?\n).*/);
+      if (m === null)
+          throw new Error("browserify-header: " +
+              "no header comment found in file \"" + filename + "\"");
+      header = m[1].replace(/\r?\n/g, "\n") + "\n";
+    }
 
     /*  create a transform stream  */
     var createStream = function () {
