@@ -22,55 +22,55 @@
 **  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var fs      = require("fs");
-var through = require("through2");
+const fs      = require("fs")
+const through = require("through2")
 
 /*  export a Browserify plugin  */
-module.exports = function (browserify, opts) {
+module.exports = (browserify, opts) => {
     /*  determine filename of header file  */
-    var filename;
+    let filename
     if (typeof opts.file === "string")
-        filename = opts.file;
+        filename = opts.file
     else
-        filename = browserify._options.entries[0];
+        filename = browserify._options.entries[0]
 
     /*  load header comment from header file  */
-    var source;
+    let source
     try {
-        source = fs.readFileSync(filename, "utf8");
+        source = fs.readFileSync(filename, "utf8")
     }
     catch (e) {
         throw new Error("browserify-header: " +
-            "failed to read file \"" + filename + "\": " + e.message);
+            "failed to read file \"" + filename + "\": " + e.message)
     }
-    var m = source.match(/^(?:.|\r?\n)*?(\/\*!\r?\n(?:.|\r?\n)*?\*\/\r?\n).*/);
+    let m = source.match(/^(?:.|\r?\n)*?(\/\*!\r?\n(?:.|\r?\n)*?\*\/\r?\n).*/)
     if (m === null)
-        m = source.match(/^(?:.|\r?\n)*?(\/\*\r?\n(?:.|\r?\n)*?\*\/\r?\n).*/);
+        m = source.match(/^(?:.|\r?\n)*?(\/\*\r?\n(?:.|\r?\n)*?\*\/\r?\n).*/)
     if (m === null)
         throw new Error("browserify-header: " +
-            "no header comment found in file \"" + filename + "\"");
-    var header = m[1].replace(/\r?\n/g, "\n") + "\n";
+            "no header comment found in file \"" + filename + "\"")
+    const header = m[1].replace(/\r?\n/g, "\n") + "\n"
 
     /*  create a transform stream  */
-    var createStream = function () {
-        var firstChunk = true;
-        var stream = through.obj(function (buf, enc, next) {
+    const createStream = () => {
+        let firstChunk = true
+        const stream = through.obj(function (buf, enc, next) {
             if (firstChunk) {
                 /*  insert the header comment as the first chunk  */
-                this.push(new Buffer(header));
-                firstChunk = false;
+                this.push(Buffer.from(header))
+                firstChunk = false
             }
-            this.push(buf);
-            next();
-        });
-        stream.label = "header";
-        return stream;
-    };
+            this.push(buf)
+            next()
+        })
+        stream.label = "header"
+        return stream
+    }
 
     /*  hook into the bundle generation pipeline of Browserify  */
-    browserify.pipeline.get("wrap").push(createStream());
-    browserify.on("reset", function () {
-        browserify.pipeline.get("wrap").push(createStream());
-    });
-};
+    browserify.pipeline.get("wrap").push(createStream())
+    browserify.on("reset", () => {
+        browserify.pipeline.get("wrap").push(createStream())
+    })
+}
 
