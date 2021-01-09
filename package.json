@@ -21,5 +21,8 @@
     "bugs":     "https://github.com/rse/browserify-header/issues",
     "dependencies": {
         "through2": "4.0.2"
+    },
+    "engines": {
+        "node": ">=10.0.0"
     }
 }
